@@ -308,10 +308,16 @@ async function sendVoiceTurn(audioBlob) {
   formData.append("file", audioBlob, "voice_turn.webm");
 
   try {
-    const res = await fetch("/api/voice-turn", {
+    let res = await fetch("/voice-turn", {
       method: "POST",
       body: formData
     });
+    if (!res.ok) {
+      res = await fetch("/api/voice-turn", {
+        method: "POST",
+        body: formData
+      });
+    }
 
     if (!res.ok) {
       callStatusText.textContent = "Listening to you — Speak now";
@@ -478,11 +484,18 @@ textTestForm.addEventListener("submit", async (e) => {
   callStatusText.textContent = "Processing query...";
 
   try {
-    const res = await fetch("/api/chat", {
+    let res = await fetch("/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: text, history: [] })
     });
+    if (!res.ok) {
+      res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, history: [] })
+      });
+    }
     const data = await res.json();
     appendMessage("VOICE_CONCIERGE", data.reply, data.executed_tools);
     
@@ -513,7 +526,10 @@ textTestForm.addEventListener("submit", async (e) => {
 // Fetch and Render Live Atelier Orders
 async function fetchOrders() {
   try {
-    const res = await fetch("/api/orders");
+    let res = await fetch("/orders");
+    if (!res.ok) {
+      res = await fetch("/api/orders");
+    }
     const orders = await res.json();
     renderOrders(orders);
   } catch (e) {
