@@ -66,11 +66,15 @@ app.add_middleware(
 groq_client = AsyncGroq(api_key=GROQ_API_KEY)
 
 
+from fastapi import APIRouter
+
+api_router = APIRouter()
+
 # -----------------------------------------------------------------------------
 # REST Endpoints
 # -----------------------------------------------------------------------------
 
-@app.get("/api/health")
+@api_router.get("/health")
 async def health_check():
     return {
         "status": "healthy",
@@ -80,13 +84,13 @@ async def health_check():
     }
 
 
-@app.get("/api/orders")
+@api_router.get("/orders")
 async def get_orders():
     """Returns the current mock order database for the inspector UI."""
     return ORDERS
 
 
-@app.get("/api/livekit/token")
+@api_router.get("/livekit/token")
 async def get_livekit_token(room: str = "concierge-room", participant_name: str = "Client"):
     """Generates a secure LiveKit Cloud access token for the browser client."""
     if not (LIVEKIT_API_KEY and LIVEKIT_API_SECRET):
@@ -115,7 +119,7 @@ class ChatRequest(BaseModel):
     history: List[Dict[str, str]] = []
 
 
-@app.post("/api/chat")
+@api_router.post("/chat")
 async def text_chat_endpoint(req: ChatRequest):
     """
     Direct low-latency text/tool API endpoint using Groq Llama 3.3 70B.
@@ -216,7 +220,7 @@ async def transcribe_with_deepgram(audio_bytes: bytes, mime_type: str = "audio/w
     return ""
 
 
-@app.post("/api/voice-turn")
+@api_router.post("/voice-turn")
 async def voice_turn_endpoint(file: UploadFile = File(...)):
     """
     End-to-End Speech-to-Speech API:
@@ -432,9 +436,18 @@ async def voice_websocket(websocket: WebSocket):
         await websocket.send_text(json.dumps({"type": "error", "message": str(e)}))
 
 
+app.include_router(api_router, prefix="/api")
+app.include_router(api_router)
+
+# Also support websocket without /api prefix
+@app.websocket("/ws/voice")
+async def voice_websocket_root(websocket: WebSocket):
+    await voice_websocket(websocket)
+
+
 frontend_dir = Path(__file__).parent.parent / "frontend"
 if frontend_dir.exists():
-    app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
+    app.mount("/static", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
 
 
 if __name__ == "__main__":
