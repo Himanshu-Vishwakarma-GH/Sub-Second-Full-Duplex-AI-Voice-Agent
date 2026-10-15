@@ -16,7 +16,10 @@ from pydantic import BaseModel
 import httpx
 from groq import AsyncGroq
 import edge_tts
-from livekit import api as livekit_api
+try:
+    from livekit import api as livekit_api
+except ImportError:
+    livekit_api = None
 
 from mock_data import ORDERS, CUSTOMERS, BRAND_INFO
 from tools import TOOLS_SCHEMA, TOOL_FUNCTIONS, lookup_order

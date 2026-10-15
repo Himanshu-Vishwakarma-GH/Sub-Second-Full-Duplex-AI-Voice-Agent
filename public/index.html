@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verve Bespoke | Sub-Second Autonomous Voice Concierge</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            heat: {
+              DEFAULT: '#fa5d19',
+              50: '#fff5ed',
+              100: '#fa5d19',
+              90: '#fa5d19e6',
+              48: '#fa5d197a',
+              20: '#fa5d1933',
+              10: '#fa5d191a',
+              5: '#fa5d190d'
+            },
+            surface: {
+              base: '#0a0a0a',
+              card: '#121212',
+              raised: '#181818',
+              active: '#222222'
+            },
+            faint: '#222222',
+            muted: '#2e2e2e',
+            loud: '#404040'
+          },
+          fontFamily: {
+            mono: ['JetBrains Mono', 'Geist Mono', 'ui-monospace', 'monospace'],
+            sans: ['Inter', 'Geist Sans', '-apple-system', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --heat-color: #fa5d19;
+    }
+    body {
+      background-color: #0a0a0a;
+      color: #ededed;
+      font-family: 'Inter', sans-serif;
+    }
+    /* Firecrawl Blueprint Grid */
+    .blueprint-grid {
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 36px 36px;
+    }
+    /* Firecrawl Heat Glow Button */
+    .btn-heat {
+      background: #fa5d19;
+      color: #ffffff;
+      box-shadow: 0 0 28px -4px rgba(250, 93, 25, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-heat:hover {
+      background: #ff6e2e;
+      box-shadow: 0 0 36px -2px rgba(250, 93, 25, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+      transform: translateY(-1px);
+    }
+    .btn-heat:active {
+      transform: scale(0.98);
+    }
+    /* Terminal card styling */
+    .terminal-card {
+      background: #121212;
+      border: 1px solid #242424;
+      box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.7);
+    }
+    .terminal-header {
+      background: #181818;
+      border-bottom: 1px solid #262626;
+    }
+    /* Subtle Corner Crosshairs */
+    .crosshair-corner {
+      position: relative;
+    }
+    .crosshair-corner::before {
+      content: '+';
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      color: #383838;
+      font-family: monospace;
+      font-size: 16px;
+      line-height: 1;
+      pointer-events: none;
+    }
+    .crosshair-corner::after {
+      content: '+';
+      position: absolute;
+      bottom: -10px;
+      right: -10px;
+      color: #383838;
+      font-family: monospace;
+      font-size: 16px;
+      line-height: 1;
+      pointer-events: none;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0e0e0e;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2a2a2a;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #fa5d19;
+    }
+  </style>
+</head>
+<body class="min-h-screen blueprint-grid flex flex-col selection:bg-heat selection:text-white">
+
+  <!-- Top Announcement Banner (Firecrawl Style) -->
+  <div class="border-b border-[#222222] bg-[#0d0d0d]/90 backdrop-blur-md px-4 py-2 text-center text-xs">
+    <div class="inline-flex items-center gap-2 text-slate-300">
+      <span class="bg-heat text-white font-mono font-bold text-[10px] px-2 py-0.5 rounded tracking-wide uppercase">
+        POC v1.0
+      </span>
+      <span>Autonomous Voice Agent for D2C Brands &bull; Sub-second TTFA powered by Groq LPU</span>
+      <span class="text-heat font-mono ml-1 hidden sm:inline">&bull; [ 100% Free Cloud Stack ]</span>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="border-b border-[#222222] bg-[#0a0a0a]/80 backdrop-blur-md sticky top-0 z-50 px-6 py-3.5">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      
+      <!-- Brand Logo (Firecrawl Flame + Bespoke) -->
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 rounded-lg bg-heat flex items-center justify-center shadow-lg shadow-heat/30">
+          <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2c0 4.5-3 7-3 10 0 3.3 2.7 6 6 6s6-2.7 6-6c0-3.5-3-5.5-3-8 4 3 6 7 6 11 0 4.97-4.03 9-9 9s-9-4.03-9-9c0-5 3.5-9 6-11 0 2 1.5 4 3 4s2-2 2-4z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-bold tracking-tight text-white text-base font-sans">Verve<span class="text-heat">.voice</span></span>
+            <span class="text-[10px] font-mono uppercase bg-[#1e1e1e] text-slate-400 border border-[#2e2e2e] px-1.5 py-0.5 rounded">
+              Bespoke Concierge
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation / Telemetry Pills -->
+      <div class="flex items-center space-x-3">
+        <!-- Live Engine Status Badge -->
+        <div class="flex items-center gap-2 bg-[#141414] border border-[#262626] rounded-full px-3 py-1 text-xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="text-slate-300 font-mono text-[11px]">engine: <strong class="text-white">groq-gpt-oss-20b</strong></span>
+        </div>
+
+        <button id="testAudioBtn" class="px-3 py-1 text-xs font-mono text-slate-300 hover:text-white bg-[#181818] hover:bg-[#222222] rounded-lg border border-[#2e2e2e] transition flex items-center gap-1.5" title="Click to test browser speaker audio">
+          <i data-lucide="volume-2" class="w-3.5 h-3.5 text-sky-400"></i>
+          <span>test_audio()</span>
+        </button>
+
+        <button id="refreshOrdersBtn" class="px-3 py-1 text-xs font-mono text-slate-300 hover:text-white bg-[#181818] hover:bg-[#222222] rounded-lg border border-[#2e2e2e] transition flex items-center gap-1.5">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-heat"></i>
+          <span>sync_db()</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Dual-Console Workspace -->
+  <main class="max-w-7xl mx-auto px-6 py-6 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
+    
+    <!-- Left Column: Voice Terminal & Dialogue Stream (7 Cols) -->
+    <div class="lg:col-span-7 flex flex-col space-y-6">
+      
+      <!-- Primary Voice Console Card (Firecrawl Terminal Style) -->
+      <div class="terminal-card rounded-xl overflow-hidden crosshair-corner">
+        
+        <!-- Terminal Header with Window Dots & Tabs -->
+        <div class="terminal-header px-4 py-2.5 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5 mr-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80 inline-block"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block"></span>
+            </div>
+            <span class="text-xs font-mono text-slate-400 flex items-center gap-1">
+              <i data-lucide="terminal" class="w-3 h-3 text-heat"></i>
+              <span>live-voice-session.sh</span>
+            </span>
+          </div>
+
+          <!-- Monospace Status Indicators -->
+          <div class="flex items-center gap-3 text-[11px] font-mono text-slate-400">
+            <span class="flex items-center gap-1">
+              <span id="sttDot" class="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
+              <span>STT:deepgram</span>
+            </span>
+            <span class="flex items-center gap-1">
+              <span id="llmDot" class="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
+              <span>LLM:groq</span>
+            </span>
+            <span class="flex items-center gap-1">
+              <span id="ttsDot" class="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
+              <span>TTS:neural</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Terminal Body -->
+        <div class="p-6 flex flex-col items-center justify-center text-center relative">
+          
+          <!-- Barge-in Alert Pill -->
+          <div id="bargeinBadge" class="hidden absolute top-3 right-4 flex items-center gap-1.5 bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[11px] font-mono px-2.5 py-1 rounded-full animate-bounce">
+            <i data-lucide="zap" class="w-3 h-3 text-rose-400"></i>
+            <span>BARGE_IN_TRIGGERED: AUDIO_HALTED</span>
+          </div>
+
+          <!-- Firecrawl Heat Glow Mic Button -->
+          <div class="relative my-4">
+            <div id="pulseRings" class="hidden absolute -inset-3 rounded-full bg-heat/20 animate-ping"></div>
+            <button id="callToggleBtn" class="btn-heat relative z-10 w-20 h-20 rounded-full flex items-center justify-center cursor-pointer">
+              <i id="callIcon" data-lucide="mic" class="w-8 h-8 text-white"></i>
+            </button>
+          </div>
+
+          <h2 id="callStatusText" class="text-base font-semibold text-white mb-0.5">
+            Initialize Voice Connection
+          </h2>
+          <p id="callSubtext" class="text-xs text-slate-400 max-w-md font-mono mb-4">
+            Click to start full-duplex session. Test WISMO, address updates, or alterations.
+          </p>
+
+          <!-- Waveform Canvas -->
+          <div class="w-full h-14 bg-[#0a0a0a] rounded-lg border border-[#222222] overflow-hidden flex items-center justify-center px-3 mb-2">
+            <canvas id="waveformCanvas" class="w-full h-full"></canvas>
+          </div>
+
+          <!-- Quick Telemetry Footnote -->
+          <div class="w-full flex items-center justify-between text-[11px] font-mono text-slate-500 px-1 pt-1">
+            <span>[ PROTOCOL: WebRTC / WS ]</span>
+            <span>[ SAMPLING: 48kHz ]</span>
+            <span class="text-heat">[ BARGE-IN: ACTIVE ]</span>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Real-Time Dialogue & Tool Traces Console -->
+      <div class="terminal-card rounded-xl overflow-hidden flex flex-col flex-1 min-h-[340px]">
+        
+        <div class="terminal-header px-4 py-2.5 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="cpu" class="w-3.5 h-3.5 text-heat"></i>
+            <span class="text-xs font-mono font-medium text-slate-300">dialogue_stream.log</span>
+          </div>
+          <div class="flex items-center gap-2 font-mono text-[11px] text-slate-400">
+            <span>TTFA:</span>
+            <span id="ttfaDisplay" class="text-heat font-bold bg-heat/10 px-2 py-0.5 rounded border border-heat/20">-- ms</span>
+          </div>
+        </div>
+
+        <!-- Chat / Trace Box -->
+        <div id="transcriptBox" class="p-4 flex-1 overflow-y-auto space-y-3.5 max-h-[340px] text-xs font-mono">
+          <!-- Initial Log -->
+          <div class="p-3 rounded-lg bg-[#161616] border border-[#262626] text-slate-300">
+            <div class="flex items-center justify-between text-heat text-[11px] font-bold mb-1">
+              <span>● VOICE_CONCIERGE</span>
+              <span class="text-slate-500 text-[10px]">200 OK</span>
+            </div>
+            <p class="font-sans text-sm text-slate-200">
+              "Good day! Welcome to Verve Bespoke Atelier. How may I assist you with your tailored garments or bespoke orders today?"
+            </p>
+          </div>
+        </div>
+
+        <!-- Text Input Form for Quiet Environments -->
+        <form id="textTestForm" class="p-3 border-t border-[#222222] bg-[#141414] flex gap-2">
+          <div class="relative flex-1">
+            <span class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-500 font-mono text-xs">$</span>
+            <input id="textInput" type="text" placeholder="type command e.g., 'Where is my order ORD-101?'" class="w-full bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg pl-7 pr-3 py-2 text-xs font-mono text-white placeholder:text-slate-600 focus:outline-none focus:border-heat">
+          </div>
+          <button type="submit" class="px-4 py-2 bg-heat hover:bg-heat-90 text-white rounded-lg text-xs font-mono font-medium transition flex items-center gap-1.5 shadow-sm shadow-heat/20">
+            <i data-lucide="corner-down-left" class="w-3.5 h-3.5"></i>
+            <span>run</span>
+          </button>
+        </form>
+
+      </div>
+
+    </div>
+
+    <!-- Right Column: Latency Telemetry & Atelier ERP (5 Cols) -->
+    <div class="lg:col-span-5 flex flex-col space-y-6">
+      
+      <!-- Latency Waterfall Telemetry Box (Firecrawl Metric Card) -->
+      <div class="terminal-card rounded-xl p-4">
+        <div class="flex items-center justify-between pb-2 mb-3 border-b border-[#222222]">
+          <div class="flex items-center gap-2">
+            <i data-lucide="gauge" class="w-3.5 h-3.5 text-heat"></i>
+            <span class="text-xs font-mono font-semibold text-slate-200">realtime_telemetry.metrics</span>
+          </div>
+          <span class="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">
+            TARGET &lt;800ms
+          </span>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 text-center font-mono">
+          <div class="bg-[#161616] p-2 rounded border border-[#262626]">
+            <div class="text-[10px] text-slate-500 uppercase">STT Latency</div>
+            <div id="sttLatencyDisplay" class="text-xs font-bold text-slate-200 mt-0.5">~110 ms</div>
+          </div>
+          <div class="bg-[#161616] p-2 rounded border border-[#262626]">
+            <div class="text-[10px] text-slate-500 uppercase">Groq LPU</div>
+            <div id="llmLatencyDisplay" class="text-xs font-bold text-heat mt-0.5">~467 ms</div>
+          </div>
+          <div class="bg-[#161616] p-2 rounded border border-[#262626]">
+            <div class="text-[10px] text-slate-500 uppercase">Neural TTS</div>
+            <div id="ttsLatencyDisplay" class="text-xs font-bold text-sky-400 mt-0.5">~250 ms</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Atelier ERP Database Inspector (Live Sync Table) -->
+      <div class="terminal-card rounded-xl overflow-hidden flex flex-col">
+        <div class="terminal-header px-4 py-2.5 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="database" class="w-3.5 h-3.5 text-heat"></i>
+            <span class="text-xs font-mono font-semibold text-slate-200">atelier_orders.table</span>
+          </div>
+          <span class="text-[10px] font-mono text-slate-500">live_mutation: enabled</span>
+        </div>
+
+        <div id="ordersContainer" class="p-3 space-y-2.5 overflow-y-auto max-h-[380px] font-mono text-xs">
+          <!-- Dynamically populated orders -->
+          <div class="text-center text-slate-500 py-6">Connecting to mock atelier ERP...</div>
+        </div>
+      </div>
+
+      <!-- Quick Test CLI Prompt Chips -->
+      <div class="terminal-card rounded-xl p-4 border-heat/20">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-mono text-heat font-semibold uppercase flex items-center gap-1.5">
+            <i data-lucide="play-circle" class="w-3.5 h-3.5"></i> sample_prompts.cli
+          </span>
+          <span class="text-[10px] font-mono text-slate-500">click to execute</span>
+        </div>
+
+        <div class="space-y-1.5 font-mono text-xs">
+          <button class="sample-prompt text-left w-full p-2 rounded bg-[#161616] hover:bg-[#1f1f1f] border border-[#262626] hover:border-heat/40 transition flex items-center gap-2 text-slate-300">
+            <span class="text-heat">$</span>
+            <span class="truncate">Where is my order ORD-101?</span>
+          </button>
+          <button class="sample-prompt text-left w-full p-2 rounded bg-[#161616] hover:bg-[#1f1f1f] border border-[#262626] hover:border-heat/40 transition flex items-center gap-2 text-slate-300">
+            <span class="text-heat">$</span>
+            <span class="truncate">Update address for ORD-101 to 77 Residency Road, Bangalore</span>
+          </button>
+          <button class="sample-prompt text-left w-full p-2 rounded bg-[#161616] hover:bg-[#1f1f1f] border border-[#262626] hover:border-heat/40 transition flex items-center gap-2 text-slate-300">
+            <span class="text-heat">$</span>
+            <span class="truncate">Sleeves for ORD-103 are 1 inch too long, schedule alteration</span>
+          </button>
+          <button class="sample-prompt text-left w-full p-2 rounded bg-[#161616] hover:bg-[#1f1f1f] border border-[#262626] hover:border-heat/40 transition flex items-center gap-2 text-slate-300">
+            <span class="text-heat">$</span>
+            <span class="truncate">I want a cash refund on my custom blazer (Policy test)</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-[#222222] bg-[#0a0a0a] px-6 py-3.5 text-center text-xs font-mono text-slate-500">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-heat"></span>
+        <span>Verve Bespoke AI Voice Architecture &bull; Full-Duplex Real-Time Engine</span>
+      </div>
+      <div class="text-slate-600">
+        Enterprise Conversational Operations &bull; Sub-Second TTFA
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js?v=4.0"></script>
+</body>
+</html>
